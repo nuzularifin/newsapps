@@ -3,26 +3,38 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/NewsListFragment">
+    app:startDestination="@id/newsCategoriesFragment">
 
     <fragment
         android:id="@+id/NewsListFragment"
-        android:name="com.nuzul.newsapp.presentation.ArticlesListFragment"
-        android:label="@string/news_fragment_label"
+        android:name="com.nuzul.newsapp.presentation.screen.ArticlesListFragment"
+        android:label="News Article"
         tools:layout="@layout/fragment_articles_list">
 
         <action
-            android:id="@+id/action_NewsListFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
+            android:id="@+id/action_NewsListFragment_to_sourceNewsFragment"
+            app:destination="@id/sourceNewsFragment" />
     </fragment>
+
     <fragment
-        android:id="@+id/SecondFragment"
-        android:name="com.nuzul.newsapp.SecondFragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second">
+        android:id="@+id/newsCategoriesFragment"
+        android:name="com.nuzul.newsapp.presentation.screen.NewsCategoriesFragment"
+        android:label="News Categories" >
 
         <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
+            android:id="@+id/action_newsCategoriesFragment_to_sourceNewsFragment"
+            app:destination="@id/sourceNewsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/sourceNewsFragment"
+        android:name="com.nuzul.newsapp.presentation.screen.SourceNewsFragment"
+        android:label="News Source" >
+        <action
+            android:id="@+id/action_sourceNewsFragment_to_newsCategoriesFragment"
+            app:destination="@id/newsCategoriesFragment" />
+        <action
+            android:id="@+id/action_sourceNewsFragment_to_NewsListFragment"
             app:destination="@id/NewsListFragment" />
     </fragment>
+
 </navigation>

@@ -8,8 +8,13 @@
         <entry key="app/src/main/res/layout/activity_web_view.xml" value="0.14175724637681159" />
         <entry key="app/src/main/res/layout/content_main.xml" value="0.14175724637681159" />
         <entry key="app/src/main/res/layout/fragment_articles_list.xml" value="0.18" />
+        <entry key="app/src/main/res/layout/fragment_dashboard.xml" value="0.14175724637681159" />
         <entry key="app/src/main/res/layout/fragment_first.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/fragment_main.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/fragment_news_categories.xml" value="0.14175724637681159" />
+        <entry key="app/src/main/res/layout/fragment_view_pager.xml" value="0.14175724637681159" />
         <entry key="app/src/main/res/layout/item_article.xml" value="0.2" />
+        <entry key="app/src/main/res/layout/item_category.xml" value="0.14175724637681159" />
       </map>
     </option>
   </component>

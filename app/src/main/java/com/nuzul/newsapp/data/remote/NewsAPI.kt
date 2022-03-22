@@ -24,4 +24,18 @@ interface NewsAPI {
         @Query("page") page : Int? = null,
         @Query("country") country: String? = null
     ): Response<ResponseNews>
+
+    @GET("/v2/top-headlines/sources")
+    suspend fun getNewsSourceByCategory(
+        @Query("apiKey") apiKey: String,
+        @Query("page") page : Int? = null,
+        @Query("category") category: String? = ""
+    ): Response<ResponseNews>
+
+    @GET("/v2/top-headlines")
+    suspend fun getNewsArticleBySource(
+        @Query("apiKey") apiKey: String,
+        @Query("page") page : Int? = null,
+        @Query("sources") source: String? = ""
+    ): Response<ResponseNews>
 }

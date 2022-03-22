@@ -6,4 +6,7 @@ object Constants {
 
     const val API_KEY = "d064459613de4ec687958a7f89f497d3"
 
+    const val FRAGMENT_KEY = "FRAGMENT_KEY"
+
+    const val SOURCE_KEY = "SOURCE_KEY"
 }

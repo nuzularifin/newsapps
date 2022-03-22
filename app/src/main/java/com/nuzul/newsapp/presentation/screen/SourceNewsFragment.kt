@@ -1,21 +1,27 @@
-package com.nuzul.newsapp.presentation
+package com.nuzul.newsapp.presentation.screen
 
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.SearchView
+import android.view.ViewGroup
 import androidx.core.os.bundleOf
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.NavHostFragment.Companion.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.gson.Gson
 import com.nuzul.newsapp.R
+import com.nuzul.newsapp.core.util.Constants
 import com.nuzul.newsapp.databinding.FragmentArticlesListBinding
 import com.nuzul.newsapp.domain.entity.ArticleEntity
+import com.nuzul.newsapp.presentation.NewsState
+import com.nuzul.newsapp.presentation.NewsViewModel
+import com.nuzul.newsapp.presentation.adapter.ArticleAdapter
+import com.nuzul.newsapp.presentation.adapter.SourceAdapter
 import com.nuzul.newsapp.presentation.extension.gone
 import com.nuzul.newsapp.presentation.extension.showToast
 import com.nuzul.newsapp.presentation.extension.visible
@@ -23,39 +29,38 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
-/**
- * A simple [Fragment] subclass as the default destination in the navigation.
- */
 @AndroidEntryPoint
-class ArticlesListFragment : Fragment(R.layout.fragment_articles_list) {
+class SourceNewsFragment() : Fragment(R.layout.fragment_articles_list) {
 
     private var _binding: FragmentArticlesListBinding? = null
     private val binding get() = _binding!!
 
+    private lateinit var key: String
+
     private val viewModel: NewsViewModel by viewModels()
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return super.onCreateView(inflater, container, savedInstanceState)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentArticlesListBinding.bind(view)
         setupRecycler()
         observe()
-        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener,
-            androidx.appcompat.widget.SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(p0: String?): Boolean {
-                return false;
-            }
 
-            override fun onQueryTextChange(query: String?): Boolean {
-                query?.let {
-                    if (it.length > 2){
-                        viewModel.searchNews(page = 1, it)
-                        return true
-                    }
-                }
-               return false
-            }
-        })
+        arguments?.let {
+            key = requireArguments().getString(Constants.FRAGMENT_KEY).toString().lowercase()
+            Log.d("Arguments", "onViewCreated: $key")
+        }
 
+        viewModel.fetchNewsSourceByCategory(1, key)
+
+        binding.searchView.visibility = View.GONE
     }
 
     private fun observe() {
@@ -79,7 +84,7 @@ class ArticlesListFragment : Fragment(R.layout.fragment_articles_list) {
 
     private fun handleProducts(articles: List<ArticleEntity>) {
         binding.articlesRecyclerView.adapter?.let {
-            if (it is ArticleAdapter) {
+            if (it is SourceAdapter) {
                 it.updateList(articles)
             }
         }
@@ -104,12 +109,11 @@ class ArticlesListFragment : Fragment(R.layout.fragment_articles_list) {
     }
 
     private fun setupRecycler() {
-        val mAdapter = ArticleAdapter(mutableListOf())
-        mAdapter.setItemTapListener(object : ArticleAdapter.OnItemTap{
-            override fun onTap(product: ArticleEntity) {
-                val b = bundleOf("title" to product.title)
-//                findNavController().navigate(R.id.action_home_to_detail, b)
-            }
+        val mAdapter = SourceAdapter(mutableListOf(), SourceAdapter.OnClickListener {
+            Log.d("SourceAdapterItem", "setupRecycler: ${it.source}")
+            val b = Bundle()
+            b.putString(Constants.SOURCE_KEY, Gson().toJson(it))
+            findNavController().navigate(R.id.action_sourceNewsFragment_to_NewsListFragment, b)
         })
 
         binding.articlesRecyclerView.apply {

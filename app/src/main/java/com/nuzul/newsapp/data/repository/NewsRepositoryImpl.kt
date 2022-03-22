@@ -94,4 +94,76 @@ class NewsRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getNewsSources(page: Int, category: String): Flow<BaseResult<List<ArticleEntity>, ResponseNews>> {
+        return flow {
+            val response = newsAPI.getNewsSourceByCategory(
+                apiKey = Constants.API_KEY, page = page, category = category
+            )
+            if (response.isSuccessful) {
+                val body = response.body()!!
+                val source = mutableListOf<ArticleEntity>()
+
+                body.sources?.forEach {
+                    source.add(
+                        ArticleEntity(
+                            id = it.id,
+                            name = it.name,
+                            description = it.description,
+                            url = it.url,
+                            category = it.category,
+                            language = it.language,
+                            country = it.country
+                        )
+                    )
+                }
+                emit(BaseResult.Success(source))
+            } else {
+                val type = object : TypeToken<ResponseNews>() {}.type
+                val err = Gson().fromJson<ResponseNews>(
+                    response.errorBody()!!.charStream(), type
+                )!!
+                err.statusCode = response.code()
+                emit(BaseResult.Error(err))
+            }
+        }
+    }
+
+    override suspend fun getNewsArticles(
+        page: Int,
+        source: String
+    ): Flow<BaseResult<List<ArticleEntity>, ResponseNews>> {
+        return flow {
+            val response = newsAPI.getNewsArticleBySource(
+                apiKey = Constants.API_KEY, page = page, source = source
+            )
+            if (response.isSuccessful) {
+                val body = response.body()!!
+                val articles = mutableListOf<ArticleEntity>()
+
+                body.articles?.forEach {
+                    articles.add(
+                        ArticleEntity(
+                            author = it.author,
+                            content = it.content,
+                            description = it.description,
+                            publishedAt = it.publishedAt,
+                            source = it.source,
+                            title = it.title,
+                            url = it.url,
+                            urlToImage = it.urlToImage
+                        )
+                    )
+                }
+                emit(BaseResult.Success(articles))
+            } else {
+                val type = object : TypeToken<ResponseNews>() {}.type
+                val err = Gson().fromJson<ResponseNews>(
+                    response.errorBody()!!.charStream(), type
+                )!!
+                err.statusCode = response.code()
+                emit(BaseResult.Error(err))
+            }
+        }
+    }
+
 }
