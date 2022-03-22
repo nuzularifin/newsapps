@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/NewsListFragment">
+
+    <fragment
+        android:id="@+id/NewsListFragment"
+        android:name="com.nuzul.newsapp.presentation.ArticlesListFragment"
+        android:label="@string/news_fragment_label"
+        tools:layout="@layout/fragment_articles_list">
+
+        <action
+            android:id="@+id/action_NewsListFragment_to_SecondFragment"
+            app:destination="@id/SecondFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/SecondFragment"
+        android:name="com.nuzul.newsapp.SecondFragment"
+        android:label="@string/second_fragment_label"
+        tools:layout="@layout/fragment_second">
+
+        <action
+            android:id="@+id/action_SecondFragment_to_FirstFragment"
+            app:destination="@id/NewsListFragment" />
+    </fragment>
+</navigation>
