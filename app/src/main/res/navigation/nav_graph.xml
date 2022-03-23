@@ -14,6 +14,9 @@
         <action
             android:id="@+id/action_NewsListFragment_to_sourceNewsFragment"
             app:destination="@id/sourceNewsFragment" />
+        <action
+            android:id="@+id/action_NewsListFragment_to_webViewFragment"
+            app:destination="@id/webViewFragment" />
     </fragment>
 
     <fragment
@@ -24,6 +27,9 @@
         <action
             android:id="@+id/action_newsCategoriesFragment_to_sourceNewsFragment"
             app:destination="@id/sourceNewsFragment" />
+        <action
+            android:id="@+id/action_newsCategoriesFragment_to_NewsListFragment"
+            app:destination="@id/NewsListFragment" />
     </fragment>
     <fragment
         android:id="@+id/sourceNewsFragment"
@@ -34,6 +40,14 @@
             app:destination="@id/newsCategoriesFragment" />
         <action
             android:id="@+id/action_sourceNewsFragment_to_NewsListFragment"
+            app:destination="@id/NewsListFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/webViewFragment"
+        android:name="com.nuzul.newsapp.presentation.screen.WebViewFragment"
+        android:label="WebViewFragment" >
+        <action
+            android:id="@+id/action_webViewFragment_to_NewsListFragment"
             app:destination="@id/NewsListFragment" />
     </fragment>
 

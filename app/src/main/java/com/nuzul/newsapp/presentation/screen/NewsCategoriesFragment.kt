@@ -2,17 +2,16 @@ package com.nuzul.newsapp.presentation.screen
 
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nuzul.newsapp.R
 import com.nuzul.newsapp.core.util.Constants.FRAGMENT_KEY
+import com.nuzul.newsapp.core.util.Constants.TOP_SOURCE_KEY
 import com.nuzul.newsapp.databinding.FragmentNewsCategoriesBinding
 import com.nuzul.newsapp.presentation.adapter.CategoryAdapter
 
-class NewsCategoriesFragment() : Fragment(R.layout.fragment_news_categories) {
+class NewsCategoriesFragment : Fragment(R.layout.fragment_news_categories) {
 
     private var _binding: FragmentNewsCategoriesBinding? = null
     private val binding get() = _binding!!
@@ -41,8 +40,13 @@ class NewsCategoriesFragment() : Fragment(R.layout.fragment_news_categories) {
     private fun setupRecyclerCategory() {
         val mAdapter = CategoryAdapter(itemList, CategoryAdapter.OnClickListener {
             val b = Bundle()
-            b.putString(FRAGMENT_KEY, it)
-            findNavController().navigate(R.id.action_newsCategoriesFragment_to_sourceNewsFragment, b)
+            if (it == "Everything" || it == "Top - Headline"){
+                b.putString(TOP_SOURCE_KEY, it)
+                findNavController().navigate(R.id.action_newsCategoriesFragment_to_NewsListFragment, b)
+            } else {
+                b.putString(FRAGMENT_KEY, it)
+                findNavController().navigate(R.id.action_newsCategoriesFragment_to_sourceNewsFragment, b)
+            }
         })
 
         binding.categoryRecyclerView.apply {

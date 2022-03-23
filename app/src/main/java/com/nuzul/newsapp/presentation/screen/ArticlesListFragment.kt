@@ -5,18 +5,22 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SearchView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.Gson
 import com.nuzul.newsapp.R
 import com.nuzul.newsapp.core.util.Constants
 import com.nuzul.newsapp.core.util.Constants.FRAGMENT_KEY
 import com.nuzul.newsapp.core.util.Constants.SOURCE_KEY
+import com.nuzul.newsapp.core.util.Constants.TOP_SOURCE_KEY
+import com.nuzul.newsapp.core.util.Constants.URL_WEB_VIEW
 import com.nuzul.newsapp.databinding.FragmentArticlesListBinding
 import com.nuzul.newsapp.domain.entity.ArticleEntity
 import com.nuzul.newsapp.presentation.NewsState
@@ -52,30 +56,40 @@ class ArticlesListFragment() : Fragment(R.layout.fragment_articles_list) {
         observe()
 
         arguments?.let {
-            key = requireArguments().getString(SOURCE_KEY).toString()
-            val article = Gson().fromJson(key, ArticleEntity::class.java)
-            idSource = article.id ?: ""
-            Log.d("Arguments", "onViewCreated: $key + $idSource")
+            if (requireArguments().getString(SOURCE_KEY)?.isNotEmpty() == true) {
+                key = requireArguments().getString(SOURCE_KEY).toString()
+                val article = Gson().fromJson(key, ArticleEntity::class.java)
+                idSource = article.id ?: ""
+                Log.d("Arguments", "onViewCreated: $key + $idSource")
+            } else {
+                key = requireArguments().getString(TOP_SOURCE_KEY).toString()
+            }
         }
 
-        viewModel.fetchNewsArticlesBySource(1, idSource)
-        binding.searchView.visibility = View.GONE
-//        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener,
-//            androidx.appcompat.widget.SearchView.OnQueryTextListener {
-//            override fun onQueryTextSubmit(p0: String?): Boolean {
-//                return false;
-//            }
-//
-//            override fun onQueryTextChange(query: String?): Boolean {
-//                query?.let {
-//                    if (it.length > 2){
-//                        viewModel.searchNews(page = 1, it)
-//                        return true
-//                    }
-//                }
-//               return false
-//            }
-//        })
+        if (key == Constants.EVERYTHING_KEY) {
+            viewModel.fetchAllArticles(1, "bitcoin")
+        } else if (key == Constants.TOP_HEADLINE_KEY) {
+            viewModel.fetchTopHeadLinesArticles(1, "us")
+        } else {
+            viewModel.fetchNewsArticlesBySource(1, idSource)
+        }
+
+        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener,
+            androidx.appcompat.widget.SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(p0: String?): Boolean {
+                return false;
+            }
+
+            override fun onQueryTextChange(query: String?): Boolean {
+                query?.let {
+                    if (it.length > 2){
+                        viewModel.searchNews(page = 1, it)
+                        return true
+                    }
+                }
+               return false
+            }
+        })
     }
 
     private fun observe() {
@@ -84,9 +98,10 @@ class ArticlesListFragment() : Fragment(R.layout.fragment_articles_list) {
     }
 
     private fun observeState() {
-        viewModel.mState.flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED).onEach {
-            handleState(it)
-        }.launchIn(viewLifecycleOwner.lifecycleScope)
+        viewModel.mState.flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
+            .onEach {
+                handleState(it)
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
     private fun observeArticles() {
@@ -105,33 +120,30 @@ class ArticlesListFragment() : Fragment(R.layout.fragment_articles_list) {
         }
     }
 
-    private fun handleState(state: NewsState){
-        when(state){
+    private fun handleState(state: NewsState) {
+        when (state) {
             is NewsState.IsLoading -> handleLoading(state.isLoading)
             is NewsState.ShowToast -> requireActivity().showToast(state.message)
             is NewsState.Init -> Unit
         }
     }
 
-    private fun handleLoading(isLoading: Boolean){
-        if(isLoading){
+    private fun handleLoading(isLoading: Boolean) {
+        if (isLoading) {
             binding.loadingProgressBar.visible()
             binding.articlesRecyclerView.gone()
-        }else{
+        } else {
             binding.loadingProgressBar.gone()
             binding.articlesRecyclerView.visible()
         }
     }
 
     private fun setupRecycler() {
-        val mAdapter = ArticleAdapter(mutableListOf())
-        mAdapter.setItemTapListener(object : ArticleAdapter.OnItemTap{
-            override fun onTap(product: ArticleEntity) {
-                val b = bundleOf("title" to product.title)
-//                findNavController().navigate(R.id.action_home_to_detail, b)
-            }
+        val mAdapter = ArticleAdapter(mutableListOf(), ArticleAdapter.OnClickListener {
+            val b = Bundle()
+            b.putString(URL_WEB_VIEW, it)
+            findNavController().navigate(R.id.action_NewsListFragment_to_webViewFragment, b)
         })
-
         binding.articlesRecyclerView.apply {
             adapter = mAdapter
             layoutManager = LinearLayoutManager(requireActivity())

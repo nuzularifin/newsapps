@@ -9,4 +9,12 @@ object Constants {
     const val FRAGMENT_KEY = "FRAGMENT_KEY"
 
     const val SOURCE_KEY = "SOURCE_KEY"
+
+    const val TOP_SOURCE_KEY = "TOP_SOURCE_KEY"
+
+    const val EVERYTHING_KEY = "Everything"
+
+    const val TOP_HEADLINE_KEY = "Top - Headline"
+
+    const val URL_WEB_VIEW = "URL_WEB_VIEW"
 }

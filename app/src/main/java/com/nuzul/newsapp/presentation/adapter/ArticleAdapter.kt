@@ -11,15 +11,12 @@ import com.nuzul.newsapp.domain.entity.ArticleEntity
 
 
 class ArticleAdapter(
-    private val articles: MutableList<ArticleEntity>
+    private val articles: MutableList<ArticleEntity>,
+    private val onClickListener: OnClickListener
 ) : RecyclerView.Adapter<ArticleAdapter.ViewHolder>() {
 
-    interface OnItemTap {
-        fun onTap(article: ArticleEntity)
-    }
-
-    fun setItemTapListener(l: OnItemTap) {
-        onTapListener = l
+    class OnClickListener(val clickListener: (url: String) -> Unit) {
+        fun onClick(url: String) = clickListener(url)
     }
 
     fun updateList(mProducts: List<ArticleEntity>) {
@@ -27,8 +24,6 @@ class ArticleAdapter(
         articles.addAll(mProducts)
         notifyDataSetChanged()
     }
-
-    private var onTapListener: OnItemTap? = null
 
     inner class ViewHolder(
         private val itemBinding: ItemArticleBinding,
@@ -54,8 +49,13 @@ class ArticleAdapter(
         return ViewHolder(view, context)
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) =
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(article = articles[position])
+        holder.itemView.setOnClickListener {
+            articles[position].url?.let { it1 -> onClickListener.onClick(it1) }
+        }
+    }
+
 
     override fun getItemCount() = articles.size
 }

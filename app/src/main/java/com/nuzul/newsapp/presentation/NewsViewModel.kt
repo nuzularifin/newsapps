@@ -59,7 +59,7 @@ class NewsViewModel @Inject constructor(
         _state.value = NewsState.IsLoading(false)
     }
 
-    private fun fetchTopHeadLinesArticles(page: Int, country: String){
+    fun fetchTopHeadLinesArticles(page: Int, country: String){
         viewModelScope.launch {
             getTopHeadlineNewsUseCase.invoke(page, country).onStart {
                 showLoading()
@@ -129,7 +129,7 @@ class NewsViewModel @Inject constructor(
         }
     }
 
-    private fun fetchAllArticles(page: Int, q: String) {
+    fun fetchAllArticles(page: Int, q: String) {
         viewModelScope.launch {
             getNewsListUseCase.invoke(page, q).onStart {
                 showLoading()
