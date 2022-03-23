@@ -93,7 +93,13 @@ class SourceNewsFragment() : Fragment(R.layout.fragment_articles_list) {
     private fun handleState(state: NewsState){
         when(state){
             is NewsState.IsLoading -> handleLoading(state.isLoading)
-            is NewsState.ShowToast -> requireActivity().showToast(state.message)
+            is NewsState.ShowToast ->
+            {
+                binding.loadingProgressBar.gone()
+                binding.errorLayout.visible()
+                binding.articlesRecyclerView.gone()
+                requireActivity().showToast(state.message)
+            }
             is NewsState.Init -> Unit
         }
     }
@@ -102,8 +108,10 @@ class SourceNewsFragment() : Fragment(R.layout.fragment_articles_list) {
         if(isLoading){
             binding.loadingProgressBar.visible()
             binding.articlesRecyclerView.gone()
+            binding.errorLayout.gone()
         }else{
             binding.loadingProgressBar.gone()
+            binding.errorLayout.gone()
             binding.articlesRecyclerView.visible()
         }
     }

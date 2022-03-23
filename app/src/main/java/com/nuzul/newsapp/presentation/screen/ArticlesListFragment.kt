@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SearchView
+import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -14,6 +15,7 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.nuzul.newsapp.R
 import com.nuzul.newsapp.core.util.Constants
@@ -45,6 +47,9 @@ class ArticlesListFragment() : Fragment(R.layout.fragment_articles_list) {
 
     private lateinit var key: String
     private lateinit var idSource: String
+    private var page: Int = 1
+    private var q: String = "bitcoin"
+
 
     private val viewModel: NewsViewModel by viewModels()
 
@@ -67,12 +72,27 @@ class ArticlesListFragment() : Fragment(R.layout.fragment_articles_list) {
         }
 
         if (key == Constants.EVERYTHING_KEY) {
-            viewModel.fetchAllArticles(1, "bitcoin")
+            viewModel.fetchAllArticles(page, q)
         } else if (key == Constants.TOP_HEADLINE_KEY) {
-            viewModel.fetchTopHeadLinesArticles(1, "us")
+            viewModel.fetchTopHeadLinesArticles(page, "us")
         } else {
-            viewModel.fetchNewsArticlesBySource(1, idSource)
+            viewModel.fetchNewsArticlesBySource(page, idSource)
         }
+
+        binding.articlesRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                if (!recyclerView.canScrollVertically(1)) {
+                    var canLoad = viewModel.loadMore.value
+                    if (!canLoad){
+                        Log.d("LoadMOre", "onScrollStateChanged: ${viewModel.loadMore.value}")
+                    } else {
+                        Log.d("LoadMOre", "onScrollStateChanged: ${viewModel.loadMore.value}")
+                    }
+                    page++;
+                }
+            }
+        })
 
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener,
             androidx.appcompat.widget.SearchView.OnQueryTextListener {
@@ -123,7 +143,13 @@ class ArticlesListFragment() : Fragment(R.layout.fragment_articles_list) {
     private fun handleState(state: NewsState) {
         when (state) {
             is NewsState.IsLoading -> handleLoading(state.isLoading)
-            is NewsState.ShowToast -> requireActivity().showToast(state.message)
+            is NewsState.ShowToast -> {
+                binding.loadingProgressBar.gone()
+                binding.articlesRecyclerView.gone()
+                binding.errorLayout.visible()
+                requireActivity().showToast(state.message)
+            }
+
             is NewsState.Init -> Unit
         }
     }
@@ -131,9 +157,11 @@ class ArticlesListFragment() : Fragment(R.layout.fragment_articles_list) {
     private fun handleLoading(isLoading: Boolean) {
         if (isLoading) {
             binding.loadingProgressBar.visible()
+            binding.errorLayout.gone()
             binding.articlesRecyclerView.gone()
         } else {
             binding.loadingProgressBar.gone()
+            binding.errorLayout.gone()
             binding.articlesRecyclerView.visible()
         }
     }

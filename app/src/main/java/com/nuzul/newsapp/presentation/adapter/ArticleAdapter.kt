@@ -19,6 +19,12 @@ class ArticleAdapter(
         fun onClick(url: String) = clickListener(url)
     }
 
+
+    fun addArticles(article: List<ArticleEntity>){
+        articles.addAll(article)
+        notifyDataSetChanged()
+    }
+
     fun updateList(mProducts: List<ArticleEntity>) {
         articles.clear()
         articles.addAll(mProducts)

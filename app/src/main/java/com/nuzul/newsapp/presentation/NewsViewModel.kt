@@ -24,48 +24,41 @@ class NewsViewModel @Inject constructor(
     private val getTopHeadlineArticlesUseCase: GetTopHeadlineArticlesUseCase
 ) : ViewModel() {
 
-    private var _page = 1
-    private val page: Int get() = _page
-
-    private var _q =  "bitcoin"
-    private val q: String get() = _q
-
-    private var _country = "us"
-    private val mCountry: String get() = _country
-
     private val _searchQuery = MutableStateFlow("")
     val mSearchQuery: StateFlow<String> get() = _searchQuery
 
     private var searchJob: Job? = null
 
-    private val _state = MutableStateFlow<NewsState>(NewsState.Init(page, q))
+    private var loadMoreJob: Job? = null
+
+    private val _loadMore = MutableStateFlow(true)
+    val loadMore: StateFlow<Boolean> get() = _loadMore
+
+    private val _state = MutableStateFlow<NewsState>(NewsState.Init)
     val mState: StateFlow<NewsState> get() = _state
 
     private val _articles = MutableStateFlow<List<ArticleEntity>>(mutableListOf())
-    val mArticles : StateFlow<List<ArticleEntity>> get() = _articles
+    val mArticles: StateFlow<List<ArticleEntity>> get() = _articles
 
 
-    private fun showToast(message: String){
+    private fun showToast(message: String) {
         _state.value = NewsState.ShowToast(message)
     }
-    init {
 
-    }
-
-    private fun showLoading(){
+    private fun showLoading() {
         _state.value = NewsState.IsLoading(true)
     }
-    private fun dismissLoading(){
+
+    private fun dismissLoading() {
         _state.value = NewsState.IsLoading(false)
     }
 
-    fun fetchTopHeadLinesArticles(page: Int, country: String){
+    fun fetchTopHeadLinesArticles(page: Int, country: String) {
         viewModelScope.launch {
             getTopHeadlineNewsUseCase.invoke(page, country).onStart {
                 showLoading()
             }.catch { exception ->
                 dismissLoading()
-                Log.d("Exceptions", "fetchAllArticles: "+exception.message.toString())
                 showToast(exception.message.toString())
             }.collect { result ->
                 when (result) {
@@ -75,7 +68,6 @@ class NewsViewModel @Inject constructor(
                     }
                     is BaseResult.Error -> {
                         dismissLoading()
-                        Log.d("Exceptions", "fetchTopHeadLinesArticles: "+result.rawResponse.status)
                         showToast(result.rawResponse.status ?: "An expected error ocurred")
                     }
                 }
@@ -89,7 +81,7 @@ class NewsViewModel @Inject constructor(
                 showLoading()
             }.catch { exception ->
                 dismissLoading()
-                Log.d("Exceptions", "fetchAllArticles: "+exception.message.toString())
+                showToast(exception.message.toString())
             }.collect { result ->
                 when (result) {
                     is BaseResult.Success -> {
@@ -98,7 +90,6 @@ class NewsViewModel @Inject constructor(
                     }
                     is BaseResult.Error -> {
                         dismissLoading()
-                        Log.d("Exceptions", "fetchAllArticles: "+result.rawResponse.status)
                         showToast(result.rawResponse.status ?: "An expected error ocurred")
                     }
                 }
@@ -106,13 +97,13 @@ class NewsViewModel @Inject constructor(
         }
     }
 
-    fun fetchNewsSourceByCategory(page: Int, category: String){
+    fun fetchNewsSourceByCategory(page: Int, category: String) {
         viewModelScope.launch {
             getNewsSourcesUseCase.invoke(page, category).onStart {
                 showLoading()
             }.catch { exception ->
                 dismissLoading()
-                Log.d("Exceptions", "fetchAllArticles: "+exception.message.toString())
+                showToast(exception.message.toString())
             }.collect { result ->
                 when (result) {
                     is BaseResult.Success -> {
@@ -121,7 +112,6 @@ class NewsViewModel @Inject constructor(
                     }
                     is BaseResult.Error -> {
                         dismissLoading()
-                        Log.d("Exceptions", "fetchAllArticles: "+result.rawResponse.status)
                         showToast(result.rawResponse.status ?: "An expected error ocurred")
                     }
                 }
@@ -135,16 +125,16 @@ class NewsViewModel @Inject constructor(
                 showLoading()
             }.catch { exception ->
                 dismissLoading()
-                Log.d("Exceptions", "fetchAllArticles: "+exception.message.toString())
+                showToast(exception.message.toString())
             }.collect { result ->
                 when (result) {
                     is BaseResult.Success -> {
-                      dismissLoading()
+                        dismissLoading()
                         _articles.value = result.data
+                        _loadMore.value = result.data.size > 10
                     }
                     is BaseResult.Error -> {
                         dismissLoading()
-                        Log.d("Exceptions", "fetchAllArticles: "+result.rawResponse.status)
                         showToast(result.rawResponse.status ?: "An expected error ocurred")
                     }
                 }
@@ -161,8 +151,7 @@ class NewsViewModel @Inject constructor(
                 showLoading()
             }.catch { exception ->
                 dismissLoading()
-                print(exception.message.toString())
-                Log.d("Exceptions", "fetchAllArticles: "+exception.message.toString())
+                showToast(exception.message.toString())
             }.collect { result ->
                 when (result) {
                     is BaseResult.Success -> {
@@ -171,7 +160,6 @@ class NewsViewModel @Inject constructor(
                     }
                     is BaseResult.Error -> {
                         dismissLoading()
-                        Log.d("Exceptions", "fetchAllArticles: "+result.rawResponse.status)
                         showToast(result.rawResponse.status ?: "An expected error ocurred")
                     }
                 }
@@ -181,7 +169,7 @@ class NewsViewModel @Inject constructor(
 }
 
 sealed class NewsState {
-    class Init(page: Int, q: String) : NewsState()
+    object Init : NewsState()
     data class IsLoading(val isLoading: Boolean) : NewsState()
-    data class ShowToast(val message : String) : NewsState()
+    data class ShowToast(val message: String) : NewsState()
 }
